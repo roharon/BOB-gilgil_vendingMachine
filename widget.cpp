@@ -2,7 +2,8 @@
 #include "ui_widget.h"
 #include <QMessageBox>
 #include <QLCDNumber>
-#include <stdio.h>
+#include <string>
+using namespace std;
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -38,6 +39,10 @@ Widget::Widget(QWidget *parent) :
     connect(pbMilk, SIGNAL (press()), this, SLOT (on_pbMilk_clicked()));
     connect(pbTea, SIGNAL (press()), this, SLOT (on_pbTea_clicked()));
     connect(pbCoffee, SIGNAL (press()), this, SLOT (on_pbCoffee_clicked()));
+
+    pbMilk->setEnabled(false);
+    pbCoffee->setEnabled(false);
+    pbTea->setEnabled(false);
 }
 
 Widget::~Widget()
@@ -45,10 +50,37 @@ Widget::~Widget()
     delete ui;
 }
 
+void Widget::setEnabledButton()
+{
+    if(count>=300){
+        pbCoffee->setEnabled(true);
+        pbMilk->setEnabled(true);
+        pbTea->setEnabled(true);
+    }
+    else if(count>=200){
+        pbMilk->setEnabled(true);
+        pbCoffee->setEnabled(true);
+        pbTea->setEnabled(false);
+    }
+    else if(count>=100){
+        pbCoffee->setEnabled(true);
+        pbMilk->setEnabled(false);
+        pbTea->setEnabled(false);
+    }
+    else{
+        pbCoffee->setEnabled(false);
+        pbMilk->setEnabled(false);
+        pbTea->setEnabled(false);
+    }
+}
+
 void Widget::increaseBalance(int value)
 {
     count += value;
     lcdNumber->display(count);
+
+    setEnabledButton();
+
 }
 
 void Widget::decreaseBalance(int value)
@@ -60,20 +92,31 @@ void Widget::decreaseBalance(int value)
     else{
         QMessageBox::information(
                     this, tr("QT자판기"), tr("돈이 부족합니다")
-    );
+        );
     }
+
+    setEnabledButton();
 
 }
 
 void Widget::on_pbinit_clicked()
 {
-    count = 0;
-    lcdNumber->display(count);
+    int left500 = count / 500;
+    int left100 = (count-(left500*500)) / 100;
+    int left50 = (count-(left500*500 + left100*100)) / 50;
+    int left10 = (count - (left500*500 + left100*100 + left50*50)) / 10;
+
+    string str = "500원 : " + to_string(left500) + "\n100원 : " + to_string(left100) + "\n50원 : "+ to_string(left50) + "\n10원" + to_string(left10);
+
+    QMessageBox::information(
+                this, tr("반환"), tr(str.c_str())
+    );
+
+    decreaseBalance(count);
 }
 
 void Widget::on_pb10_clicked()
 {
-    printf("MONEY = %d\n",count);
     increaseBalance(10);
 }
 

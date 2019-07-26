@@ -28,6 +28,7 @@ private slots:
     void on_pbMilk_clicked();
     void on_pbTea_clicked();
 
+    void setEnabledButton();
     void increaseBalance(int value);
     void decreaseBalance(int value);
 
